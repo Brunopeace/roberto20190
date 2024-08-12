@@ -8,6 +8,7 @@ if ('serviceWorker' in navigator) {
     });
   }
 
+
 /* código para instalar o aplicativo */
 
   let deferredPrompt;
@@ -66,7 +67,7 @@ document.getElementById('backToTop').onclick = function() {
 
 function verificarAcesso() {
     const uuidEsperado = ['0b1518b0-3b15-4872-a1f3-da4c9d6ccfc8',
-                          '9a438243-ea81-4842-a551-724ad5fdbe1f'];
+ 'c3e43422-1275-4c8b-84c1-eec682fadf1f'];
     let uuidArmazenado = localStorage.getItem('uuid');
 
     if (!uuidArmazenado) {
@@ -329,9 +330,9 @@ function restaurarSelecionados() {
     checkboxes.forEach(checkbox => {
         const nome = checkbox.getAttribute('data-nome');
         const clienteIndex = lixeira.findIndex(c => c.nome === nome);
-        const clienteExistente = clientes.some(cliente => cliente.nome === nome);
 
-        if (clienteIndex !== -1 && !clienteExistente) {
+        // Verifica se o cliente existe na lista de clientes e se ele está na lixeira
+        if (clienteIndex !== -1 && !clientes.some(cliente => cliente.nome === nome)) {
             const cliente = lixeira.splice(clienteIndex, 1)[0];
             clientes.push(cliente);
             clientesRestaurados = true;
@@ -347,6 +348,8 @@ function restaurarSelecionados() {
 
     if (clientesRestaurados) {
         exibirFeedback("Clientes restaurados com sucesso");
+    } else {
+        exibirFeedback("Nenhum cliente foi restaurado. Clientes com o mesmo nome já existem.");
     }
 }
 
@@ -529,22 +532,19 @@ function atualizarCorCelulaData(celulaData, dataVencimento) {
     }
 }
 
-function renovarCliente(nomeCliente) {
-    const clientes = carregarClientes();
-    const clienteExistente = clientes.find(c => c.nome === nomeCliente);
+function renovarCliente(nome) {
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    let clientesHoje = JSON.parse(localStorage.getItem('clientesRenovadosHoje')) || { data: hoje, nomes: [] };
 
-    if (clienteExistente) {
-        let dataAnterior = new Date(clienteExistente.data).toLocaleDateString('pt-BR');
-        let novaData = new Date(); // Aqui você pode definir a nova data como desejar
+    // Se a data armazenada for diferente da data atual, reinicie a lista de nomes
+    if (clientesHoje.data !== hoje) {
+        clientesHoje = { data: hoje, nomes: [] };
+    }
 
-        // Atualiza a data de vencimento do cliente
-        clienteExistente.data = novaData;
-        localStorage.setItem('clientes', JSON.stringify(clientes));
-
-        // Registra a renovação de hoje
-        registrarClienteRenovadoHoje(nomeCliente);
-
-        // Atualiza a exibição dos clientes alterados
+    // Verifica se o cliente já foi renovado hoje
+    if (!clientesHoje.nomes.includes(nome)) {
+        clientesHoje.nomes.push(nome);
+        localStorage.setItem('clientesRenovadosHoje', JSON.stringify(clientesHoje));
         exibirClientesRenovadosHoje();
     }
 }
@@ -597,6 +597,35 @@ exibirClientesAlterados();
 }
 
 // Função para exibir a lista de clientes alterados na interface
+function registrarClienteAlterado(nome) {
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    let clientesAlterados = JSON.parse(localStorage.getItem('clientesAlterados')) || [];
+    let clientesRenovados = JSON.parse(localStorage.getItem('clientesRenovadosHoje')) || { data: hoje, nomes: [] };
+
+    // Verifica se o cliente já foi renovado hoje
+    const clienteJaRenovado = clientesRenovados.nomes.some(c => c.nome === nome);
+
+    if (clienteJaRenovado) {
+        return; // Não registrar o cliente se ele já foi renovado hoje
+    }
+
+    // Verifica se já existe uma entrada para a data de hoje
+    let clientesHoje = clientesAlterados.find(c => c.data === hoje);
+
+    if (!clientesHoje) {
+        // Se não existe uma entrada para hoje, cria uma nova
+        clientesHoje = { data: hoje, nomes: [] };
+        clientesAlterados.push(clientesHoje);
+    }
+
+    // Verifica se o cliente já foi alterado hoje
+    if (!clientesHoje.nomes.some(c => c.nome === nome)) {
+        clientesHoje.nomes.push({ nome });
+        localStorage.setItem('clientesAlterados', JSON.stringify(clientesAlterados));
+        exibirClientesAlterados();
+    }
+}
+
 function exibirClientesAlterados() {
     const clientesAlterados = JSON.parse(localStorage.getItem('clientesAlterados')) || [];
     const hoje = new Date().toLocaleDateString('pt-BR');
@@ -604,7 +633,8 @@ function exibirClientesAlterados() {
     const campoClientesAlterados = document.getElementById('infoClientes');
 
     if (clientesHoje && clientesHoje.nomes.length > 0) {
-        const listaClientes = clientesHoje.nomes.map(cliente => `<li>${cliente.nome}</li>`).join('');
+        const nomesUnicos = [...new Set(clientesHoje.nomes.map(cliente => cliente.nome))];
+        const listaClientes = nomesUnicos.map(nome => `<li>${nome}</li>`).join('');
         campoClientesAlterados.innerHTML = `<span class="titulo-clientes-renovados">Clientes renovados hoje:</span><ul>${listaClientes}</ul>`;
     } else {
         campoClientesAlterados.innerHTML = '<span class="nenhum-cliente-renovado">Nenhum cliente renovado hoje</span>';
@@ -630,25 +660,6 @@ function atualizarDataVencimento(nomeCliente, novaData) {
     
         }
     }
-}
-
-function registrarClienteAlterado(nome) {
-    const clientesAlterados = JSON.parse(localStorage.getItem('clientesAlterados')) || [];
-    const hoje = new Date().toLocaleDateString('pt-BR');
-
-    let clienteHoje = clientesAlterados.find(c => c.data === hoje);
-
-    if (!clienteHoje) {
-        clienteHoje = { data: hoje, nomes: [] };
-        clientesAlterados.push(clienteHoje);
-    }
-
-    if (!clienteHoje.nomes.includes(nome)) {
-        clienteHoje.nomes.push(nome);
-    }
-
-    localStorage.setItem('clientesAlterados', JSON.stringify(clientesAlterados));
-    
 }
 
 function editarCliente(nomeAntigo, novoNome, novoTelefone, novaDataVencimento) {
@@ -796,8 +807,6 @@ function toggleDarkMode() {
     localStorage.setItem('dark-mode', isDarkMode);
 }
 
-
-
 function carregarDarkMode() {
     const isDarkMode = localStorage.getItem('dark-mode') === 'true';
     const body = document.body;
@@ -810,8 +819,6 @@ function carregarDarkMode() {
         footer.classList.add('footer-light'); // Garante que a classe correta seja aplicada
     }
 }
-
-
 
 function exportarClientes() {
     const clientes = carregarClientes();
@@ -826,7 +833,6 @@ function exportarClientes() {
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 }
-
 
 function importarClientes(event) {
     const file = event.target.files[0];
@@ -897,7 +903,6 @@ function backupClientes() {
     link.click();
 }
 
-
 // Função para verificar e realizar o backup diário
 function verificarBackupDiario() {
     const ultimoBackup = localStorage.getItem('ultimoBackup');
@@ -940,7 +945,6 @@ const lixeira = carregarLixeira();
 return lixeira.length;
 }
 
-
 function excluirClientesSelecionados() {
     const checkboxes = document.querySelectorAll('.cliente-checkbox:checked');
     const clientes = carregarClientes();
@@ -974,7 +978,6 @@ function excluirClientesSelecionados() {
         }, 4000);
     }
 }
-
 
 window.onload = function() {
 
