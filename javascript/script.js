@@ -60,9 +60,6 @@ function gerarUUID() {
 }
 
 
-
-
-
 function salvarClientes(clientes) {
     localStorage.setItem('clientes', JSON.stringify(clientes));
 }
