@@ -904,19 +904,6 @@ function backupClientes() {
 }
 
 // Função para verificar e realizar o backup diário
-function verificarBackupDiario() {
-    const ultimoBackup = localStorage.getItem('ultimoBackup');
-    const hoje = new Date().toLocaleDateString('pt-BR');
-
-    if (ultimoBackup !== hoje) {
-        // Chama a função de backup que agora inclui a lixeira
-        backupClientes();
-        localStorage.setItem('ultimoBackup', hoje);
-        console.log('Backup diário realizado com sucesso.');
-    } else {
-        console.log('O backup diário já foi realizado hoje.');
-    }
-}
 
 function verificarBackupDiario() {
     const hoje = new Date();
