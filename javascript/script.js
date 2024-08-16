@@ -900,6 +900,12 @@ function excluirClientesSelecionados() {
         }
     });
 
+    if (clientesExcluidos) {
+        // Tocar o som de exclusão
+        const somExclusao = new Audio('sounds/exclusao.mp3');
+        somExclusao.play();
+    }
+
     salvarClientes(clientes);
     salvarLixeira(lixeira);
     carregarLixeiraPagina();
