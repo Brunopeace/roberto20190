@@ -1,6 +1,6 @@
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('service-worker.js').then(function(registration) {
+window.addEventListener('load', function() {
+ navigator.serviceWorker.register('service-worker.js').then(function(registration) {
         console.log('Service Worker registrado com sucesso:', registration);
       }, function(err) {
         console.log('Falha ao registrar o Service Worker:', err);
@@ -8,62 +8,36 @@ if ('serviceWorker' in navigator) {
     });
   }
 
-
 /* código para instalar o aplicativo */
-
   let deferredPrompt;
-
 window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
-
-    // Criar um botão ou outro elemento na interface para o usuário instalar
     const installButton = document.createElement('button');
     installButton.innerText = 'Instalar App';
     installButton.style.position = 'fixed';
     installButton.style.bottom = '10px';
     installButton.style.right = '10px';
     document.body.appendChild(installButton);
-
     installButton.addEventListener('click', () => {
-        deferredPrompt.prompt(); // Mostra o prompt de instalação
-
-        deferredPrompt.userChoice.then((choiceResult) => {
+        deferredPrompt.prompt();
+   deferredPrompt.userChoice.then((choiceResult) => {
             if (choiceResult.outcome === 'accepted') {
-                console.log('Usuário aceitou instalar o app');
+   console.log('Usuário aceitou instalar o app');
             } else {
-                console.log('Usuário rejeitou instalar o app');
+   console.log('Usuário rejeitou instalar o app');
             }
-            deferredPrompt = null; // Limpa o prompt armazenado
-            installButton.remove(); // Remove o botão da interface
+            deferredPrompt = null;
+            installButton.remove();
         });
     });
 });
-
-// Opcional: Remover o botão após um tempo se o usuário não interagir
 setTimeout(() => {
     if (deferredPrompt && installButton) {
         installButton.remove();
         console.log('Botão de instalação removido por inatividade.');
     }
-}, 15000); // Remove o botão após 15 segundos
-
-
-
-// Mostra o botão quando o usuário rola 20px para baixo
-window.onscroll = function() {
-    const backToTopButton = document.getElementById('backToTop');
-    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
-        backToTopButton.style.display = 'block';
-    } else {
-        backToTopButton.style.display = 'none';
-    }
-};
-
-// Função para rolar para o topo
-document.getElementById('backToTop').onclick = function() {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-};
+}, 15000);
 
 function verificarAcesso() {
     const uuidEsperado = ['3e1d329a-2742-4b9a-a5b5-e5acf888a784'];
@@ -87,6 +61,17 @@ function gerarUUID() {
     });
 }
 
+window.onscroll = function() {
+    const backToTopButton = document.getElementById('backToTop');
+    if (document.body.scrollTop > 20 || document.documentElement.scrollTop > 20) {
+        backToTopButton.style.display = 'block';
+    } else {
+        backToTopButton.style.display = 'none';
+    }
+};
+document.getElementById('backToTop').onclick = function() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 function esvaziarLixeira() {
     if (confirm("Tem certeza de que deseja esvaziar a lixeira? Isso removerá permanentemente todos os clientes nela.")) {
@@ -99,40 +84,29 @@ function carregarLixeiraPagina() {
     const lixeira = carregarLixeira();
     const tbody = document.querySelector('#tabelaLixeira tbody');
     tbody.innerHTML = '';
-
     lixeira.forEach(cliente => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td><input type="checkbox" class="checkboxCliente" data-nome="${cliente.nome}"></td>
             <td>${cliente.nome}</td>
             <td>
-                <button onclick="restaurarCliente('${cliente.nome}')">Restaurar</button>
+<button onclick="restaurarCliente('${cliente.nome}')">Restaurar</button>
                 <button onclick="removerPermanentemente('${cliente.nome}')">Excluir</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
-
     const esvaziarLixeiraButton = document.getElementById('esvaziarLixeira');
     esvaziarLixeiraButton.style.display = lixeira.length === 0 ? 'none' : 'block';
-
-    const quantidadeClientes = contarClientesLixeira();
-    document.getElementById('quantidadeClientesLixeira').textContent = `Clientes na lixeira: ${quantidadeClientes}`;
+    const quantidadeClientes = contarClientesLixeira(); document.getElementById('quantidadeClientesLixeira').textContent = `Clientes na lixeira: ${quantidadeClientes}`;
 }
-
 document.addEventListener('DOMContentLoaded', function() {
     carregarLixeiraPagina();
 });
 
-function removerPermanentemente(nome) {
-    const lixeira = carregarLixeira();
-    const clienteIndex = lixeira.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
-
-    if (clienteIndex !== -1) {
-        lixeira.splice(clienteIndex, 1);
-        salvarLixeira(lixeira);
-        carregarLixeiraPagina();
-    }
+function contarClientesLixeira() {
+const lixeira = carregarLixeira();
+return lixeira.length;
 }
 
 function removerPermanentemente(nome) {
@@ -148,8 +122,7 @@ function removerPermanentemente(nome) {
 }
 
 function carregarLixeira() {
-    const lixeira = localStorage.getItem('lixeira');
-    return lixeira ? JSON.parse(lixeira) : [];
+    return JSON.parse(localStorage.getItem('lixeira')) || [];
 }
 
 function salvarLixeira(lixeira) {
@@ -164,9 +137,8 @@ function restaurarCliente(nome) {
     const clienteIndex = lixeira.findIndex(c => c.nome === nome);
 
     if (clienteIndex !== -1) {
-        const cliente = lixeira.splice(clienteIndex, 1)[0];
+     const cliente = lixeira.splice(clienteIndex, 1)[0];
         clientes.push(cliente);
-
         salvarClientes(clientes);
         salvarLixeira(lixeira);
         carregarLixeiraPagina();
@@ -199,11 +171,9 @@ window.addEventListener('load', function() {
     clientes.forEach(cliente => adicionarLinhaTabela(cliente.nome, cliente.telefone, cliente.data));
 });
 
-// Função para alternar a exibição da lixeira
 function alternarLixeira() {
 const containerLixeira = document.getElementById('containerLixeira');
 const toggleButton = document.getElementById('toggleLixeira');
-
 if (containerLixeira.style.display === 'none') {
 containerLixeira.style.display = 'block';
 toggleButton.textContent = 'Fechar Lixeira';
@@ -216,15 +186,11 @@ toggleButton.textContent = 'Abrir Lixeira';
 function excluirCliente(nome) {
     const clientes = carregarClientes();
     const clienteIndex = clientes.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
-
     if (clienteIndex !== -1) {
-        // Tocar o som de exclusão
         const somExclusao = new Audio('sounds/exclusao.mp3');
         somExclusao.play();
-
-        const cliente = clientes.splice(clienteIndex, 1)[0];
+     const cliente = clientes.splice(clienteIndex, 1)[0];
         salvarClientes(clientes);
-
         const lixeira = carregarLixeira();
         lixeira.push(cliente);
         salvarLixeira(lixeira);
@@ -267,12 +233,9 @@ function restaurarSelecionados() {
     const lixeira = carregarLixeira();
     let clientes = carregarClientes();
     let clientesRestaurados = false;
-
     checkboxes.forEach(checkbox => {
         const nome = checkbox.getAttribute('data-nome');
         const clienteIndex = lixeira.findIndex(c => c.nome === nome);
-
-        // Verifica se o cliente existe na lista de clientes e se ele está na lixeira
         if (clienteIndex !== -1 && !clientes.some(cliente => cliente.nome === nome)) {
             const cliente = lixeira.splice(clienteIndex, 1)[0];
             clientes.push(cliente);
@@ -299,12 +262,12 @@ function exibirFeedback(mensagem) {
     if (!feedbackElement) {
         feedbackElement = document.createElement('div');
         feedbackElement.id = 'feedbackR';
-        document.body.appendChild(feedbackElement);
+    document.body.appendChild(feedbackElement);
     }
     feedbackElement.innerText = mensagem;
-    feedbackElement.style.display = "block";  // Exibe a mensagem
+    feedbackElement.style.display = "block";
     setTimeout(() => {
-        feedbackElement.style.display = "none";  // Oculta a mensagem após 4 segundos
+        feedbackElement.style.display = "none";
     }, 4000);
 }
 
@@ -312,20 +275,16 @@ function adicionarCliente() {
     const nome = document.getElementById('inputNome').value.trim();
     const telefone = document.getElementById('inputTelefone').value.trim();
     const data = new Date(document.getElementById('inputData').value);
-
     if (nome && validarTelefone(telefone) && !isNaN(data.getTime())) {
         const clientes = carregarClientes();
         const clienteExistente = clientes.some(cliente => cliente.nome.toLowerCase() === nome.toLowerCase());
-
         if (clienteExistente) {
             alert("Cliente com o mesmo nome já existe.");
             return;
         }
-
         const dataVencimento = calcularDataVencimento(data);
         clientes.push({ nome: nome, telefone: telefone, data: dataVencimento });
         salvarClientes(clientes);
-
         window.location.reload();
     } else {
         alert("Por favor, preencha o nome, telefone válido e a data.");
@@ -340,14 +299,11 @@ function calcularDataVencimento(data) {
     let dia = data.getDate() + 1;
     let mes = data.getMonth() + 1;
     let ano = data.getFullYear();
-
     if (mes > 11) {
         mes = 0;
         ano += 1;
     }
-
     let dataVencimento = new Date(ano, mes, dia);
-
     if (dataVencimento.getMonth() !== mes) {
         dataVencimento = new Date(ano, mes + 1, 0);
     }
@@ -358,48 +314,36 @@ function calcularDataVencimento(data) {
 function adicionarLinhaTabela(nome, telefone, data) {
     const tabela = document.getElementById('corpoTabela');
     const novaLinha = document.createElement('tr');
-    novaLinha.setAttribute('data-nome', nome); // Adiciona atributo de nome à linha
-
-    // Adiciona a caixa de seleção
+    novaLinha.setAttribute('data-nome', nome);
     const celulaSelecionar = novaLinha.insertCell(0);
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.classList.add('cliente-checkbox');
     celulaSelecionar.appendChild(checkbox);
-
     const celulaNome = novaLinha.insertCell(1);
     celulaNome.innerText = nome;
-
     const celulaTelefone = novaLinha.insertCell(2);
     celulaTelefone.innerText = telefone;
-
     const celulaData = novaLinha.insertCell(3);
     celulaData.innerText = new Date(data).toLocaleDateString('pt-BR');
-
     const celulaAcoes = novaLinha.insertCell(4);
-
     celulaAcoes.appendChild(criarBotao("Editar", function() {
         const novoNome = prompt("Digite o novo nome do cliente:", nome);
         const novoTelefone = prompt("Digite o novo telefone do cliente:", telefone);
         const novaData = prompt("Digite a nova data de vencimento (DD/MM/AAAA):", new Date(data).toLocaleDateString('pt-BR'));
-
-        // Verifica se o usuário não cancelou algum dos prompts
         if (novoNome !== null && novoTelefone !== null && novaData !== null && novoNome && validarTelefone(novoTelefone)) {
             const partesData = novaData.split('/');
             if (partesData.length === 3) {
                 const novaDataVencimento = new Date(partesData[2], partesData[1] - 1, partesData[0]);
                 if (!isNaN(novaDataVencimento.getTime())) {
-                    const dataAnterior = new Date(data).toLocaleDateString('pt-BR');
+             const dataAnterior = new Date(data).toLocaleDateString('pt-BR');
                     const novaDataFormatada = novaDataVencimento.toLocaleDateString('pt-BR');
-
-                    if (dataAnterior !== novaDataFormatada) {
-                        atualizarClientesAlterados(nome, dataAnterior, novaDataFormatada);
+    if (dataAnterior !== novaDataFormatada) {
+atualizarClientesAlterados(nome, dataAnterior, novaDataFormatada);
                     }
-
-                    celulaNome.innerText = novoNome;
-                    celulaTelefone.innerText = novoTelefone;
-                    celulaData.innerText = novaDataFormatada;
-
+   celulaNome.innerText = novoNome;
+   celulaTelefone.innerText = novoTelefone;
+   celulaData.innerText = novaDataFormatada;
                     const clientes = carregarClientes();
                     const clienteIndex = clientes.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
                     if (clienteIndex !== -1) {
@@ -420,15 +364,10 @@ function adicionarLinhaTabela(nome, telefone, data) {
             excluirCliente(nome);
         }
     }));
-    
     celulaAcoes.appendChild(criarBotao("WhatsApp", function() {
         const dataVencimentoDestacada = `\`${celulaData.innerText}\``;
-
-        // Obter a hora atual
         const horaAtual = new Date().getHours();
         let saudacao;
-
-        // Determinar a saudação com base na hora atual
         if (horaAtual >= 0 && horaAtual < 12) {
             saudacao = "bom dia";
         } else if (horaAtual >= 12 && horaAtual < 18) {
@@ -436,17 +375,13 @@ function adicionarLinhaTabela(nome, telefone, data) {
         } else {
             saudacao = "boa noite";
         }
-
-        // Construir a mensagem com a saudação correta
         const mensagem = encodeURIComponent(
             `*Olá ${saudacao}, seu plano de canais está vencendo, com data de vencimento dia ${dataVencimentoDestacada}. Caso queira renovar após esta data, favor entrar em contato.* \n \n *PIX CELULAR* \n \n 11995392287 `
         );
-        const telefoneCliente = telefone.replace(/\D/g, '');
+   const telefoneCliente = telefone.replace(/\D/g, '');
         abrirWhatsApp(telefoneCliente, mensagem);
     }));
-
     atualizarCorCelulaData(celulaData, data);
-
     tabela.appendChild(novaLinha);
 }
 
@@ -476,13 +411,9 @@ function atualizarCorCelulaData(celulaData, dataVencimento) {
 function renovarCliente(nome) {
     const hoje = new Date().toLocaleDateString('pt-BR');
     let clientesHoje = JSON.parse(localStorage.getItem('clientesRenovadosHoje')) || { data: hoje, nomes: [] };
-
-    // Se a data armazenada for diferente da data atual, reinicie a lista de nomes
     if (clientesHoje.data !== hoje) {
         clientesHoje = { data: hoje, nomes: [] };
     }
-
-    // Verifica se o cliente já foi renovado hoje
     if (!clientesHoje.nomes.includes(nome)) {
         clientesHoje.nomes.push(nome);
         localStorage.setItem('clientesRenovadosHoje', JSON.stringify(clientesHoje));
@@ -516,12 +447,10 @@ function exibirClientesRenovadosHoje() {
     }
 }
 
-// Chama a função para exibir os clientes renovados ao carregar a página
 document.addEventListener('DOMContentLoaded', () => {
     exibirClientesRenovadosHoje();
 });
 
-// Função para atualizar a lista de clientes alterados no localStorage
 function atualizarClientesAlterados(nome, dataAnterior, novaData) {
 const hoje = new Date().toLocaleDateString('pt-BR');
 let clientesAlterados = JSON.parse(localStorage.getItem('clientesAlterados')) || [];
@@ -537,29 +466,20 @@ localStorage.setItem('clientesAlterados', JSON.stringify(clientesAlterados));
 exibirClientesAlterados();
 }
 
-// Função para exibir a lista de clientes alterados na interface
 function registrarClienteAlterado(nome) {
     const hoje = new Date().toLocaleDateString('pt-BR');
     let clientesAlterados = JSON.parse(localStorage.getItem('clientesAlterados')) || [];
     let clientesRenovados = JSON.parse(localStorage.getItem('clientesRenovadosHoje')) || { data: hoje, nomes: [] };
-
-    // Verifica se o cliente já foi renovado hoje
     const clienteJaRenovado = clientesRenovados.nomes.some(c => c.nome === nome);
 
     if (clienteJaRenovado) {
-        return; // Não registrar o cliente se ele já foi renovado hoje
+        return;
     }
-
-    // Verifica se já existe uma entrada para a data de hoje
     let clientesHoje = clientesAlterados.find(c => c.data === hoje);
-
     if (!clientesHoje) {
-        // Se não existe uma entrada para hoje, cria uma nova
         clientesHoje = { data: hoje, nomes: [] };
         clientesAlterados.push(clientesHoje);
     }
-
-    // Verifica se o cliente já foi alterado hoje
     if (!clientesHoje.nomes.some(c => c.nome === nome)) {
         clientesHoje.nomes.push({ nome });
         localStorage.setItem('clientesAlterados', JSON.stringify(clientesAlterados));
@@ -589,11 +509,9 @@ document.addEventListener('DOMContentLoaded', () => {
 function atualizarDataVencimento(nomeCliente, novaData) {
     let clientes = JSON.parse(localStorage.getItem('clientes')) || [];
     let clienteExistente = clientes.find(c => c.nome === nomeCliente);
-
     if (clienteExistente) {
         let dataAnterior = new Date(clienteExistente.data).toLocaleDateString('pt-BR');
         let novaDataFormatada = new Date(novaData).toLocaleDateString('pt-BR');
-
         if (dataAnterior !== novaDataFormatada) {
             clienteExistente.data = novaData;
             localStorage.setItem('clientes', JSON.stringify(clientes));
@@ -606,15 +524,13 @@ function atualizarDataVencimento(nomeCliente, novaData) {
 function editarCliente(nomeAntigo, novoNome, novoTelefone, novaDataVencimento) {
             let clientes = carregarClientes();
             let clienteExistente = clientes.find(c => c.nome.toLowerCase() === nomeAntigo.toLowerCase());
-
             if (clienteExistente) {
                 let dataAnterior = new Date(clienteExistente.data).toLocaleDateString('pt-BR');
                 let novaDataFormatada = novaDataVencimento.toLocaleDateString('pt-BR');
-
                 if (dataAnterior !== novaDataFormatada) {
                     clienteExistente.nome = novoNome;
-                    clienteExistente.telefone = novoTelefone;
-                    clienteExistente.data = novaDataVencimento;
+      clienteExistente.telefone = novoTelefone;
+      clienteExistente.data = novaDataVencimento;
 
                     salvarClientes(clientes);
                     atualizarClientesAlterados(novoNome, dataAnterior, novaDataFormatada);
@@ -642,7 +558,7 @@ function pesquisarCliente() {
     const linhas = document.getElementById('corpoTabela').getElementsByTagName('tr');
 
     for (let i = 0; i < linhas.length; i++) {
-        const nome = linhas[i].getElementsByTagName('td')[1].innerText.toLowerCase(); // Mudança do índice de 0 para 1
+        const nome = linhas[i].getElementsByTagName('td')[1].innerText.toLowerCase();
         if (nome.includes(termoPesquisa)) {
             linhas[i].style.display = '';
         } else {
@@ -654,9 +570,9 @@ function pesquisarCliente() {
 function atualizarInfoClientes() {
     const totalVencidos = calcularTotalClientesVencidos();
     const totalNaoVencidos = calcularTotalClientesNaoVencidos();
-    document.getElementById('infoClientes2').innerHTML = `
-        <span class="clientes-vencidos">Clientes vencidos: ${totalVencidos}</span><br>
-        <span class="clientes-ativos">Clientes ativos: ${totalNaoVencidos}</span>
+document.getElementById('infoClientes2').innerHTML = `
+<span class="clientes-vencidos">Clientes vencidos: ${totalVencidos}</span><br>
+<span class="clientes-ativos">Clientes ativos: ${totalNaoVencidos}</span>
     `;
 }
 
@@ -715,9 +631,7 @@ function carregarPagina() {
     });
 
     const tabela = document.getElementById('corpoTabela');
-    tabela.innerHTML = ''; // Limpa a tabela antes de adicionar os clientes ordenados
-
-    // Adicionar clientes na ordem correta
+    tabela.innerHTML = '';
     clientesOrdenados.doisDias.forEach(cliente => {
         adicionarLinhaTabela(cliente.nome, cliente.telefone, new Date(cliente.data));
     });
@@ -733,17 +647,14 @@ function carregarPagina() {
     clientesOrdenados.vencidos.forEach(cliente => {
         adicionarLinhaTabela(cliente.nome, cliente.telefone, new Date(cliente.data));
     });
-
     atualizarInfoClientes();
 }
 
 function toggleDarkMode() {
     const body = document.body;
     body.classList.toggle('dark-mode');
-
     const footer = document.querySelector('footer');
-    footer.classList.toggle('footer-light'); // Alterna a classe para o footer
-
+    footer.classList.toggle('footer-light');
     const isDarkMode = body.classList.contains('dark-mode');
     localStorage.setItem('dark-mode', isDarkMode);
 }
@@ -752,26 +663,27 @@ function carregarDarkMode() {
     const isDarkMode = localStorage.getItem('dark-mode') === 'true';
     const body = document.body;
     const footer = document.querySelector('footer');
-    
     if (isDarkMode) {
         body.classList.add('dark-mode');
-        footer.classList.remove('footer-light'); // Garante que a classe correta seja aplicada
+        footer.classList.remove('footer-light');
     } else {
-        footer.classList.add('footer-light'); // Garante que a classe correta seja aplicada
+        footer.classList.add('footer-light');
     }
 }
 
 function exportarClientes() {
     const clientes = carregarClientes();
-    const blob = new Blob([JSON.stringify(clientes)], { type: "application/json" });
+    const lixeira = carregarLixeira();
+    const todosClientes = [...clientes, ...lixeira];
+    const jsonClientes = JSON.stringify(todosClientes, null, 2);
+
+    const blob = new Blob([jsonClientes], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
-    
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'clientes.json';
-    document.body.appendChild(a);
+    a.download = 'clientes_exportados.json';
     a.click();
-    document.body.removeChild(a);
+
     URL.revokeObjectURL(url);
 }
 
@@ -780,100 +692,105 @@ function importarClientes(event) {
     if (file) {
         const reader = new FileReader();
         reader.onload = function(e) {
-            const backup = JSON.parse(e.target.result);
-
-            // Verifique se os dados estão encapsulados dentro de um objeto maior
-            const clientesImportados = Array.isArray(backup) ? backup : backup.clientes || [];
-            const clientesAtuais = carregarClientes();
-            
-            // Mapa para rastrear clientes já existentes pelo nome
-            const mapaClientes = new Map();
-            clientesAtuais.forEach(cliente => {
-                mapaClientes.set(cliente.nome.toLowerCase(), cliente);
-            });
-
-            // Atualizar clientes existentes e adicionar novos clientes do backup
-            clientesImportados.forEach(clienteImportado => {
-                const nomeClienteImportado = clienteImportado.nome.toLowerCase();
-                if (mapaClientes.has(nomeClienteImportado)) {
-                    // Cliente já existe, atualizar com informações do backup
-                    const clienteExistente = mapaClientes.get(nomeClienteImportado);
-                    clienteExistente.telefone = clienteImportado.telefone;
-                    clienteExistente.data = clienteImportado.data;
-                } else {
-                    // Novo cliente do backup, adicionar à lista
-                    clientesAtuais.push(clienteImportado);
+            try {
+                const data = JSON.parse(e.target.result);
+                let clientesImportados = [];
+                let lixeiraImportada = [];
+                if (Array.isArray(data)) {
+        clientesImportados = data;
+                } else if (typeof data === 'object') {
+        clientesImportados = data.clientes || [];
+           lixeiraImportada = data.lixeira || [];
+                    if (!clientesImportados.length && !lixeiraImportada.length) {
+                        for (let key in data) {
+                            if (key.toLowerCase().includes('cliente')) {
+         clientesImportados = data[key];
+                            } else if (key.toLowerCase().includes('lixeira')) {
+           lixeiraImportada = data[key];
+                            }
+                        }
+                    }
                 }
-            });
-
-            // Salvar a lista atualizada de clientes
-            salvarClientes(clientesAtuais);
-            window.location.reload();
+                const clientesAtuais = carregarClientes();
+                const lixeiraAtual = carregarLixeira();
+                const mapaClientes = new Map();
+                clientesAtuais.forEach(cliente => {
+mapaClientes.set(cliente.nome.toLowerCase(), cliente);
+                });
+clientesImportados.forEach(clienteImportado => {
+                    const nomeClienteImportado = clienteImportado.nome.toLowerCase();
+                    if (mapaClientes.has(nomeClienteImportado)) {
+                    const clienteExistente = mapaClientes.get(nomeClienteImportado);
+   clienteExistente.telefone = clienteImportado.telefone;
+   clienteExistente.data = clienteImportado.data;
+                    } else {
+                        clientesAtuais.push(clienteImportado);
+                    }
+                });
+                const mapaLixeira = new Map();
+                lixeiraAtual.forEach(cliente => {
+mapaLixeira.set(cliente.nome.toLowerCase(), cliente);
+                });
+lixeiraImportada.forEach(clienteImportado => {
+                    const nomeClienteImportado = clienteImportado.nome.toLowerCase();
+                    if (mapaLixeira.has(nomeClienteImportado)) {
+                        const clienteExistente = mapaLixeira.get(nomeClienteImportado);
+                        clienteExistente.telefone = clienteImportado.telefone;
+                        clienteExistente.data = clienteImportado.data;
+                    } else {
+                        lixeiraAtual.push(clienteImportado);
+                    }
+                });
+                salvarClientes(clientesAtuais);
+                salvarLixeira(lixeiraAtual);
+      alert("Importação realizada com sucesso!");
+                window.location.reload();
+            } catch (error) {
+alert("Erro ao importar o arquivo: " + error.message);
+            }
         };
         reader.readAsText(file);
     }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('importarClientes').addEventListener('change', importarClientes);
-    
+document.addEventListener('DOMContentLoaded', function() { document.getElementById('importarClientes').addEventListener('change', importarClientes);
     if (typeof displayClients === 'function') {
-        displayClients(); // Verifica se a função displayClients existe antes de chamá-la
+        displayClients();
     }
 });
-
-function backupClientes() {
-    // Carrega os clientes do localStorage
-    const clientes = carregarClientes();
-    // Carrega a lixeira do localStorage
-    const lixeira = carregarLixeira();
-
-    // Cria um objeto para armazenar o backup
-    const backup = {
-        clientes: clientes,
-        lixeira: lixeira
-    };
-
-    // Converte o objeto de backup para uma string JSON
-    const backupJSON = JSON.stringify(backup);
-
-    // Salva o JSON no localStorage
-    localStorage.setItem('backupDiario', backupJSON);
-
-    // Cria um blob a partir da string JSON
-    const blob = new Blob([backupJSON], { type: 'application/json' });
-
-    // Cria um link temporário para fazer o download do backup
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(blob);
-    link.download = `backup_clientes_${new Date().toLocaleDateString('pt-BR')}.json`;
-    link.click();
-}
-
-// Agendar a verificação de backup diário
-setInterval(verificarBackupDiario, 60 * 60 * 1000); // Verifica a cada hora
-
-document.getElementById('select-all').addEventListener('change', function() {
-    const checkboxes = document.querySelectorAll('.cliente-checkbox');
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = this.checked;
-    });
-});
-
-
-// Função para verificar e realizar o backup diário
 
 function verificarBackupDiario() {
-    const hoje = new Date();
-    const ultimaBackupStr = localStorage.getItem('ultimaBackup');
-    const ultimaBackup = ultimaBackupStr ? new Date(ultimaBackupStr) : null;
+    const hoje = new Date().toLocaleDateString();
+    const ultimoBackup = localStorage.getItem('ultimoBackup');
+    if (ultimoBackup !== hoje) {
+        const clientes = carregarClientes();
+        const lixeira = carregarLixeira();
+        const backupData = {
+            data: hoje,
+            clientes: clientes || [],
+            lixeira: lixeira || []
+        };
 
-    // Se não houve backup antes ou se um dia passou desde o último backup
-    if (!ultimaBackup || (hoje.getTime() - ultimaBackup.getTime()) >= 24 * 60 * 60 * 1000) {
-        backupClientes();
-        localStorage.setItem('ultimaBackup', hoje.toISOString());
+        try {
+ const backupJson = JSON.stringify(backupData, null, 2);
+            const blob = new Blob([backupJson], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `backup-${hoje}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            localStorage.setItem('ultimoBackup', hoje);
+            alert("Backup diário realizado com sucesso!");
+        } catch (error) {
+            console.error("Erro ao gerar o backup diário:", error);
+            alert("Houve um erro ao gerar o backup diário. Tente novamente.");
+        }
     }
 }
+
+window.addEventListener('load', verificarBackupDiario);
+setInterval(verificarBackupDiario, 60 * 60 * 1000);
 
 document.getElementById('select-all').addEventListener('change', function() {
     const checkboxes = document.querySelectorAll('.cliente-checkbox');
@@ -881,13 +798,6 @@ document.getElementById('select-all').addEventListener('change', function() {
         checkbox.checked = this.checked;
     });
 });
-
-
-
-function contarClientesLixeira() {
-const lixeira = carregarLixeira();
-return lixeira.length;
-}
 
 function excluirClientesSelecionados() {
     const checkboxes = document.querySelectorAll('.cliente-checkbox:checked');
@@ -900,18 +810,16 @@ function excluirClientesSelecionados() {
         const clienteIndex = clientes.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
 
         if (clienteIndex !== -1) {
-            const cliente = clientes.splice(clienteIndex, 1)[0];
+    const cliente = clientes.splice(clienteIndex, 1)[0];
             lixeira.push(cliente);
-            clientesExcluidos = true;  // Marca que ao menos um cliente foi excluído
+            clientesExcluidos = true;
         }
     });
 
     if (clientesExcluidos) {
-        // Tocar o som de exclusão
         const somExclusao = new Audio('sounds/exclusao.mp3');
         somExclusao.play();
     }
-
     salvarClientes(clientes);
     salvarLixeira(lixeira);
     carregarLixeiraPagina();
@@ -922,9 +830,9 @@ function excluirClientesSelecionados() {
     if (clientesExcluidos) {
         const feedbackElement = document.getElementById('feedback');
         feedbackElement.innerText = "Clientes excluídos com sucesso";
-        feedbackElement.style.display = "block";  // Exibe a mensagem
+        feedbackElement.style.display = "block";
         setTimeout(() => {
-            feedbackElement.style.display = "none";  // Oculta a mensagem após 3 segundos
+            feedbackElement.style.display = "none";
         }, 4000);
     }
 }
@@ -936,8 +844,5 @@ window.onload = function() {
     verificarBackupDiario();
     exibirClientesAlterados();
     verificarAcesso();
-    
-    
-    // Chama a função de scroll para garantir que o botão seja configurado corretamente
     window.onscroll();
 };
