@@ -315,18 +315,25 @@ function adicionarLinhaTabela(nome, telefone, data) {
     const tabela = document.getElementById('corpoTabela');
     const novaLinha = document.createElement('tr');
     novaLinha.setAttribute('data-nome', nome);
+
     const celulaSelecionar = novaLinha.insertCell(0);
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.classList.add('cliente-checkbox');
     celulaSelecionar.appendChild(checkbox);
+
     const celulaNome = novaLinha.insertCell(1);
     celulaNome.innerText = nome;
+
     const celulaTelefone = novaLinha.insertCell(2);
     celulaTelefone.innerText = telefone;
+
     const celulaData = novaLinha.insertCell(3);
     celulaData.innerText = new Date(data).toLocaleDateString('pt-BR');
+
     const celulaAcoes = novaLinha.insertCell(4);
+
+    // Botão de editar
     celulaAcoes.appendChild(criarBotao("Editar", function() {
         const novoNome = prompt("Digite o novo nome do cliente:", nome);
         const novoTelefone = prompt("Digite o novo telefone do cliente:", telefone);
@@ -336,14 +343,15 @@ function adicionarLinhaTabela(nome, telefone, data) {
             if (partesData.length === 3) {
                 const novaDataVencimento = new Date(partesData[2], partesData[1] - 1, partesData[0]);
                 if (!isNaN(novaDataVencimento.getTime())) {
-             const dataAnterior = new Date(data).toLocaleDateString('pt-BR');
+                    const dataAnterior = new Date(data).toLocaleDateString('pt-BR');
                     const novaDataFormatada = novaDataVencimento.toLocaleDateString('pt-BR');
-    if (dataAnterior !== novaDataFormatada) {
-atualizarClientesAlterados(nome, dataAnterior, novaDataFormatada);
+                    if (dataAnterior !== novaDataFormatada) {
+                        atualizarClientesAlterados(nome, dataAnterior, novaDataFormatada);
                     }
-   celulaNome.innerText = novoNome;
-   celulaTelefone.innerText = novoTelefone;
-   celulaData.innerText = novaDataFormatada;
+                    celulaNome.innerText = novoNome;
+                    celulaTelefone.innerText = novoTelefone;
+                    celulaData.innerText = novaDataFormatada;
+
                     const clientes = carregarClientes();
                     const clienteIndex = clientes.findIndex(c => c.nome.toLowerCase() === nome.toLowerCase());
                     if (clienteIndex !== -1) {
@@ -359,12 +367,29 @@ atualizarClientesAlterados(nome, dataAnterior, novaDataFormatada);
         }
     }));
 
+    // Botão de excluir
     celulaAcoes.appendChild(criarBotao("Excluir", function() {
         if (confirm("Tem certeza de que deseja excluir este cliente?")) {
             excluirCliente(nome);
         }
     }));
-    celulaAcoes.appendChild(criarBotao("WhatsApp", function() {
+
+    // Dropdown para enviar mensagem
+    const dropdownDiv = document.createElement('div');
+    dropdownDiv.classList.add('dropdown');
+
+    const botaoDropdown = document.createElement('button');
+    botaoDropdown.innerText = 'WhatsApp';
+    botaoDropdown.classList.add('dropbtn');
+
+    const conteudoDropdown = document.createElement('div');
+    conteudoDropdown.classList.add('dropdown-content');
+
+    // Botão para WhatsApp
+    const botaoWhatsApp = document.createElement('button');
+    botaoWhatsApp.innerText = 'Enviar para WhatsApp';
+    botaoWhatsApp.classList.add('WhatsApp');
+    botaoWhatsApp.onclick = function() {
         const dataVencimentoDestacada = `\`${celulaData.innerText}\``;
         const horaAtual = new Date().getHours();
         let saudacao;
@@ -378,9 +403,56 @@ atualizarClientesAlterados(nome, dataAnterior, novaDataFormatada);
         const mensagem = encodeURIComponent(
             `*Olá ${saudacao}, seu plano de canais está vencendo, com data de vencimento dia ${dataVencimentoDestacada}. Caso queira renovar após esta data, favor entrar em contato.* \n \n *PIX CELULAR* \n \n 11995392287 `
         );
-   const telefoneCliente = telefone.replace(/\D/g, '');
+        const telefoneCliente = telefone.replace(/\D/g, '');
         abrirWhatsApp(telefoneCliente, mensagem);
-    }));
+    };
+    conteudoDropdown.appendChild(botaoWhatsApp);
+
+    // Botão para Telegram
+    const botaoTelegram = document.createElement('button');
+botaoTelegram.innerText = 'Enviar para Telegram';
+botaoTelegram.classList.add('telegram');
+botaoTelegram.onclick = function() {
+    const dataVencimentoDestacada = celulaData.innerText;
+    const horaAtual = new Date().getHours();
+    let saudacao;
+    if (horaAtual >= 0 && horaAtual < 12) {
+        saudacao = "bom dia";
+    } else if (horaAtual >= 12 && horaAtual < 18) {
+        saudacao = "boa tarde";
+    } else {
+        saudacao = "boa noite";
+    }
+
+    const mensagem = encodeURIComponent(
+        `Olá ${saudacao}, seu plano de canais está vencendo, com data de vencimento dia ${dataVencimentoDestacada}. Caso queira renovar após esta data, favor entrar em contato. \n\n PIX CELULAR \n\n 11995392287`
+    );
+
+    const numeroTelefone = telefone.replace(/\D/g, ''); // Limpa o número de telefone
+    const usernameCliente = null; // Coloque aqui o username se disponível, ou deixe como null
+
+    if (usernameCliente) {
+        // Se houver username, tenta abrir o chat com o username
+        const telegramAppUrlUsername = `tg://resolve?domain=${usernameCliente}&text=${mensagem}`;
+        window.location.href = telegramAppUrlUsername;
+
+        // Fallback para o navegador
+        setTimeout(() => {
+            const urlTelegram = `https://t.me/${usernameCliente}?text=${mensagem}`;
+            window.open(urlTelegram, '_blank');
+        }, 500);
+    } else {
+        // Se não houver username, usa o link de compartilhamento com número de telefone
+        const urlTelegramShare = `https://t.me/share/url?url=tel:+${numeroTelefone}&text=${mensagem}`;
+        window.open(urlTelegramShare, '_blank');
+    }
+};
+    conteudoDropdown.appendChild(botaoTelegram);
+
+    dropdownDiv.appendChild(botaoDropdown);
+    dropdownDiv.appendChild(conteudoDropdown);
+    celulaAcoes.appendChild(dropdownDiv);
+
     atualizarCorCelulaData(celulaData, data);
     tabela.appendChild(novaLinha);
 }
